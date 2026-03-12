@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ project.name }} — Settings — Claro Historia</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1f1f1f;--surface3:#252525;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.15);
+  --text:#e8e4de;--muted:#5a5650;--muted2:#7a7470;
+  --accent:#e8a246;--accent2:#4a9e7a;--danger:#c45050;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inconsolata',monospace;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:50;background:rgba(14,14,14,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.05em;flex-shrink:0}
+.logo span{color:var(--accent)}
+.hdr-left{display:flex;align-items:center;gap:.75rem}
+.back-link{font-size:.72rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.25rem .6rem;border-radius:2px;transition:all .15s;white-space:nowrap}
+.back-link:hover{color:var(--accent);border-color:rgba(232,162,70,.4)}
+.hdr-right{display:flex;align-items:center;gap:.65rem}
+.btn{font-family:'Inconsolata',monospace;font-size:.8rem;font-weight:500;padding:.45rem .9rem;border-radius:2px;border:1px solid var(--border-hi);background:transparent;color:var(--text);cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#0e0e0e;font-weight:600}
+.btn-p:hover{background:#d4923c;border-color:#d4923c;color:#0e0e0e}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{border-color:rgba(196,80,80,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(196,80,80,.08);border-color:var(--danger)}
+.page-badge{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted2);border:1px solid var(--border);padding:.2rem .6rem;border-radius:2px}
+
+/* ── Layout ── */
+main{max-width:860px;margin:0 auto;padding:2.5rem 2rem 8rem;display:grid;grid-template-columns:200px 1fr;gap:2.5rem;align-items:start}
+@media(max-width:680px){main{grid-template-columns:1fr;padding:1.5rem 1rem 6rem}}
+
+/* ── Sidebar nav ── */
+.settings-nav{position:sticky;top:5rem}
+.nav-section{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.5rem;padding-left:.5rem}
+.nav-item{display:flex;align-items:center;gap:.55rem;font-size:.78rem;color:var(--muted2);padding:.45rem .65rem;border-radius:2px;cursor:pointer;text-decoration:none;transition:all .15s;border:1px solid transparent;margin-bottom:.15rem}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);background:rgba(232,162,70,.07);border-color:rgba(232,162,70,.15)}
+.nav-icon{font-size:.85rem;width:1rem;text-align:center;flex-shrink:0}
+.nav-divider{height:1px;background:var(--border);margin:1rem 0}
+
+/* ── Settings content ── */
+.settings-body{}
+.settings-section{margin-bottom:3rem;scroll-margin-top:6rem}
+.section-hdr{font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+
+/* ── Form elements ── */
+.field-group{margin-bottom:1.35rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.35rem}
+@media(max-width:520px){.field-row{grid-template-columns:1fr}}
+label{display:block;font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem}
+.label-hint{font-size:.65rem;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:.35rem;opacity:.7}
+input[type=text],input[type=password],textarea{width:100%;background:var(--surface2);border:1px solid var(--border-hi);border-radius:2px;padding:.65rem .85rem;font-family:'Inconsolata',monospace;font-size:.88rem;color:var(--text);outline:none;transition:border-color .15s,background .15s;resize:vertical}
+input[type=text]:focus,input[type=password]:focus,textarea:focus{border-color:var(--accent);background:var(--surface3)}
+textarea{min-height:90px;line-height:1.55}
+.field-hint{font-size:.68rem;color:var(--muted);margin-top:.35rem;line-height:1.5}
+
+/* ── API key field — masked ── */
+.api-key-wrap{position:relative}
+.api-key-wrap input{padding-right:2.5rem}
+.api-key-toggle{position:absolute;right:.65rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;padding:.2rem;transition:color .15s;line-height:1}
+.api-key-toggle:hover{color:var(--accent)}
+
+/* ── Drive folder row ── */
+.drive-row{display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end}
+.drive-row input{min-width:0}
+.btn-sm{font-size:.72rem;padding:.4rem .75rem;white-space:nowrap}
+
+/* ── Card ── */
+.setting-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.35rem 1.5rem;margin-bottom:1.25rem}
+.setting-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.setting-card-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:600}
+.setting-card-sub{font-size:.75rem;color:var(--muted);margin-top:.2rem;line-height:1.5}
+
+/* ── Stats strip ── */
+.stat-row{display:flex;gap:1.5rem;margin-bottom:.5rem}
+.stat-item{display:flex;flex-direction:column;gap:.2rem}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--accent);line-height:1}
+.stat-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+
+/* ── Dashboard badges ── */
+.dash-list{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.75rem}
+.dash-badge{font-size:.7rem;color:var(--muted2);background:var(--surface2);border:1px solid var(--border-hi);padding:.25rem .65rem;border-radius:2px}
+.dash-badge-empty{font-size:.75rem;color:var(--muted);font-style:italic}
+
+/* ── Drive status indicator ── */
+.drive-status{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);margin-top:.6rem}
+.drive-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.drive-dot.connected{background:var(--accent2)}
+.drive-dot.error{background:var(--danger)}
+
+/* ── Save bar ── */
+.save-bar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(14,14,14,.97);border-top:1px solid var(--border);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transform:translateY(100%);transition:transform .2s}
+.save-bar.visible{transform:translateY(0)}
+.save-bar-msg{font-size:.78rem;color:var(--muted2)}
+.save-bar-actions{display:flex;gap:.65rem}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:4.5rem;right:2rem;z-index:100;background:var(--surface3);border:1px solid var(--border-hi);border-radius:3px;padding:.55rem 1rem;font-size:.78rem;color:var(--text);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.success{border-color:rgba(74,158,122,.4);color:var(--accent2)}
+.toast.error{border-color:rgba(196,80,80,.4);color:var(--danger)}
+
+/* ── Danger zone ── */
+.danger-zone{border:1px solid rgba(196,80,80,.2);border-radius:3px;padding:1.35rem 1.5rem}
+.danger-zone-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:600;color:var(--danger);margin-bottom:.5rem}
+.danger-zone-sub{font-size:.75rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+
+/* ── Drive files browser ── */
+.drive-toolbar{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.drive-path{flex:1;font-size:.75rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drive-search{background:var(--surface2);border:1px solid var(--border-hi);border-radius:2px;padding:.35rem .7rem;font-family:'Inconsolata',monospace;font-size:.8rem;color:var(--text);outline:none;width:180px;transition:border-color .15s}
+.drive-search:focus{border-color:var(--accent)}
+.file-list{border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.file-row{display:grid;grid-template-columns:1.6rem 1fr 6rem 7rem auto;gap:.75rem;align-items:center;padding:.65rem 1rem;border-bottom:1px solid var(--border);transition:background .12s;font-size:.78rem}
+.file-row:last-child{border-bottom:none}
+.file-row:hover{background:var(--surface2)}
+.file-row.header{background:var(--surface);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem 1rem;cursor:default}
+.file-row.header:hover{background:var(--surface)}
+.file-icon{font-size:1rem;text-align:center;line-height:1}
+.file-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--text)}
+.file-name a{color:inherit;text-decoration:none;transition:color .12s}
+.file-name a:hover{color:var(--accent)}
+.file-type{font-size:.68rem;color:var(--muted2)}
+.file-date{font-size:.68rem;color:var(--muted)}
+.file-actions{display:flex;gap:.35rem;opacity:0;transition:opacity .12s}
+.file-row:hover .file-actions{opacity:1}
+.file-action-btn{font-family:'Inconsolata',monospace;font-size:.65rem;padding:.2rem .45rem;border-radius:2px;border:1px solid var(--border-hi);background:transparent;color:var(--muted2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.file-action-btn:hover{color:var(--accent);border-color:rgba(232,162,70,.4)}
+.drive-empty{padding:2.5rem;text-align:center;color:var(--muted);font-size:.82rem;font-style:italic}
+.drive-error{padding:1.25rem;background:rgba(196,80,80,.06);border:1px solid rgba(196,80,80,.2);border-radius:3px;font-size:.78rem;color:var(--danger);line-height:1.5}
+.drive-loading{padding:2rem;text-align:center;color:var(--muted);font-size:.78rem}
+.drive-loading::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-hi);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-left:.6rem;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.drive-pager{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--muted)}
+.drive-not-configured{padding:1.5rem;background:var(--surface2);border:1px dashed var(--border-hi);border-radius:3px;font-size:.78rem;color:var(--muted);line-height:1.7}
+.drive-not-configured a{color:var(--accent);text-decoration:none}
+.drive-not-configured a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <div class="logo">Claro <span>Historia</span></div>
+    <a href="{% url 'index' project.id %}" class="back-link">← {{ project.name }}</a>
+  </div>
+  <div class="hdr-right">
+    <div class="page-badge">Project Settings</div>
+    <span style="font-size:.72rem;color:var(--muted);border-left:1px solid var(--border);padding-left:.75rem">{{ request.user.get_full_name|default:request.user.username }}</span>
+    <a href="{% url 'logout' %}" class="back-link" style="color:var(--muted)" onmouseover="this.style.color='var(--danger)';this.style.borderColor='rgba(196,80,80,.4)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Sign out</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Sidebar nav ── -->
+  <nav class="settings-nav">
+    <div class="nav-section">Settings</div>
+    <a class="nav-item active" href="#general" onclick="setActive(this)">
+      <span class="nav-icon">◈</span> General
+    </a>
+    <a class="nav-item" href="#integrations" onclick="setActive(this)">
+      <span class="nav-icon">⟡</span> Integrations
+    </a>
+    <a class="nav-item" href="#drive-files" onclick="setActive(this)">
+      <span class="nav-icon">🗂</span> Drive Files
+    </a>
+    <div class="nav-divider"></div>
+    <div class="nav-section">Info</div>
+    <a class="nav-item" href="#about" onclick="setActive(this)">
+      <span class="nav-icon">◉</span> About
+    </a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="#danger" onclick="setActive(this)" style="color:var(--danger);opacity:.7">
+      <span class="nav-icon">⚠</span> Danger Zone
+    </a>
+  </nav>
+
+  <!-- ── Settings body ── -->
+  <div class="settings-body">
+
+    <!-- ── General ── -->
+    <div class="settings-section" id="general">
+      <div class="section-hdr">General</div>
+
+      <div class="field-group">
+        <label>Project Name</label>
+        <input type="text" id="fieldName" value="{{ project.name }}" placeholder="Project name" oninput="markDirty()">
+      </div>
+
+      <div class="field-group">
+        <label>Description <span class="label-hint">(optional)</span></label>
+        <textarea id="fieldDesc" placeholder="What is this project about? What are its goals?" oninput="markDirty()">{{ project.description }}</textarea>
+      </div>
+    </div>
+
+    <!-- ── Integrations ── -->
+    <div class="settings-section" id="integrations">
+      <div class="section-hdr">Integrations</div>
+
+      {% if oauth_error %}
+      <div class="drive-error" style="margin-bottom:1.25rem">
+        ⚠ Google authorisation failed: <strong>{{ oauth_error }}</strong>. Check your client ID and secret and try again.
+      </div>
+      {% endif %}
+      {% if oauth_ok %}
+      <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:rgba(74,158,122,.08);border:1px solid rgba(74,158,122,.25);border-radius:3px;font-size:.78rem;color:var(--accent2)">
+        ✓ Google Drive connected successfully.
+      </div>
+      {% endif %}
+
+      <!-- OAuth credentials -->
+      <div class="setting-card">
+        <div class="setting-card-hdr">
+          <div>
+            <div class="setting-card-title">Google OAuth Credentials</div>
+            <div class="setting-card-sub">
+              Create an OAuth 2.0 client at
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent);text-decoration:none">Google Cloud Console</a>.
+              Set the authorised redirect URI to:<br>
+              <code style="font-size:.68rem;color:var(--muted2);background:var(--surface3);padding:.15rem .4rem;border-radius:2px">{{ request.scheme }}://{{ request.get_host }}/api/projects/{{ project.id }}/drive/oauth/callback/</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group" style="margin-bottom:0">
+            <label>Client ID</label>
+            <input type="text" id="fieldClientId" value="{{ project.google_client_id }}" placeholder="12345…apps.googleusercontent.com" autocomplete="off" oninput="markDirty()">
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label>Client Secret</label>
+            <div class="api-key-wrap">
+              <input type="password" id="fieldClientSecret" value="{{ project.google_client_secret }}" placeholder="GOCSPX-…" autocomplete="off" oninput="markDirty()">
+              <button class="api-key-toggle" type="button" onclick="toggleSecret()" title="Show/hide">👁</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+          <div style="display:flex;align-items:center;gap:.55rem;font-size:.78rem">
+            <div style="width:8px;height:8px;border-radius:50%;background:{% if oauth_connected %}var(--accent2){% else %}var(--muted){% endif %}"></div>
+            {% if oauth_connected %}
+            <span style="color:var(--accent2)">Connected — Drive access granted</span>
+            {% else %}
+            <span style="color:var(--muted)">Not connected</span>
+            {% endif %}
+          </div>
+          <div style="display:flex;gap:.6rem">
+            {% if oauth_connected %}
+            <button class="btn btn-sm btn-danger" onclick="disconnectOAuth()">Disconnect</button>
+            {% endif %}
+            <button class="btn btn-sm btn-p" id="btnConnect" onclick="connectOAuth()">
+              {% if oauth_connected %}Reconnect{% else %}Connect Google Drive{% endif %}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google Drive Folder -->
+      <div class="setting-card">
+        <div class="setting-card-hdr">
+          <div>
+            <div class="setting-card-title">Drive Folder</div>
+            <div class="setting-card-sub">The folder Claro Historia will read files from.</div>
+          </div>
+          <div class="drive-status">
+            <div class="drive-dot{% if project.google_drive_folder_id %} connected{% endif %}" id="driveDot"></div>
+            <span id="driveStatusText">{% if project.google_drive_folder_id %}Folder linked{% else %}Not linked{% endif %}</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Folder Name <span class="label-hint">(display label)</span></label>
+          <input type="text" id="fieldFolderName" value="{{ project.google_drive_folder_name }}" placeholder="e.g. Core Platform — Docs" oninput="markDirty()">
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label>Folder ID</label>
+          <input type="text" id="fieldFolderId" value="{{ project.google_drive_folder_id }}" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="markDirty();updateDriveStatus()" style="font-size:.78rem">
+          <div class="field-hint">
+            Find it in the Drive URL: drive.google.com/drive/folders/<strong style="color:var(--accent)">FOLDER_ID</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Drive Files ── -->
+    <div class="settings-section" id="drive-files">
+      <div class="section-hdr">Drive Files</div>
+
+      {% if not project.google_client_id or not project.google_client_secret %}
+      <div class="drive-not-configured">
+        Set up your <a href="#integrations">OAuth credentials</a> in the Integrations section first.
+      </div>
+      {% elif not oauth_connected %}
+      <div class="drive-not-configured">
+        OAuth credentials are saved but you haven't connected yet.
+        Save your credentials, then click <a href="#integrations">Connect Google Drive</a> above.
+      </div>
+      {% elif not project.google_drive_folder_id %}
+      <div class="drive-not-configured">
+        Connected ✓ — now <a href="#integrations">link a folder</a> to browse its files.
+      </div>
+      {% else %}
+      <div class="drive-toolbar">
+        <div class="drive-path" id="drivePath">
+          📁 {{ project.google_drive_folder_name|default:project.google_drive_folder_id }}
+        </div>
+        <input class="drive-search" type="text" id="driveSearch" placeholder="Filter files…" oninput="filterFiles(this.value)">
+        <button class="btn btn-sm" id="btnRefresh" onclick="loadDriveFiles()">↻ Refresh</button>
+      </div>
+      <div id="driveFilesWrap">
+        <div class="drive-loading">Loading files</div>
+      </div>
+      {% endif %}
+    </div>
+
+
+    <!-- ── About ── -->
+    <div class="settings-section" id="about">
+      <div class="section-hdr">About</div>
+      <div class="setting-card">
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-val">{{ milestone_count }}</div>
+            <div class="stat-lbl">Milestones</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">{{ event_count }}</div>
+            <div class="stat-lbl">Events</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">{{ dashboards_featuring.count }}</div>
+            <div class="stat-lbl">Your Dashboards</div>
+          </div>
+        </div>
+        {% if project.created_at %}
+        <div style="font-size:.72rem;color:var(--muted);margin-top:1rem">Created {{ project.created_at|date:"N j, Y" }}</div>
+        {% endif %}
+        {% if project.owner %}
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Owner: {{ project.owner.get_full_name|default:project.owner.username }}</div>
+        {% endif %}
+
+        <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+          <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem">Appears on your dashboards</div>
+          <div class="dash-list">
+            {% for db in dashboards_featuring %}
+            <a href="{% url 'dashboard' db.id %}" class="dash-badge" style="text-decoration:none">{{ db.name }}</a>
+            {% empty %}
+            <span class="dash-badge-empty">Not on any of your dashboards yet</span>
+            {% endfor %}
+          </div>
+          {% if all_user_dashboards and not dashboards_featuring %}
+          <div style="margin-top:.75rem">
+            <select id="addToDashSelect" style="background:var(--surface2);border:1px solid var(--border-hi);border-radius:2px;padding:.45rem .7rem;font-family:'Inconsolata',monospace;font-size:.78rem;color:var(--text);outline:none;margin-right:.5rem">
+              <option value="">Select a dashboard…</option>
+              {% for db in all_user_dashboards %}
+              <option value="{{ db.id }}">{{ db.name }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-sm" onclick="addToDashboard()">Add to Dashboard</button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Danger zone ── -->
+    <div class="settings-section" id="danger">
+      <div class="section-hdr">Danger Zone</div>
+      <div class="danger-zone">
+        <div class="danger-zone-title">Delete Project</div>
+        <div class="danger-zone-sub">Permanently delete this project and all its milestones and events. This cannot be undone.</div>
+        <button class="btn btn-danger" onclick="confirmDelete()">Delete Project…</button>
+      </div>
+    </div>
+
+  </div><!-- /settings-body -->
+</main>
+
+<!-- ── Save bar ── -->
+<div class="save-bar" id="saveBar">
+  <div class="save-bar-msg" id="saveBarMsg">You have unsaved changes</div>
+  <div class="save-bar-actions">
+    <button class="btn" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-p" id="btnSave" onclick="saveSettings()">Save Changes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var PROJECT_ID = {{ project.id }};
+var ORIGINAL = {
+  name:                     "{{ project.name|escapejs }}",
+  description:              "{{ project.description|escapejs }}",
+  google_client_id:         "{{ project.google_client_id|escapejs }}",
+  google_client_secret:     "{{ project.google_client_secret|escapejs }}",
+  google_drive_folder_id:   "{{ project.google_drive_folder_id|escapejs }}",
+  google_drive_folder_name: "{{ project.google_drive_folder_name|escapejs }}",
+};
+
+var dirty = false;
+
+function markDirty(){
+  dirty = true;
+  document.getElementById('saveBar').classList.add('visible');
+}
+
+function getCurrent(){
+  return {
+    name:                     document.getElementById('fieldName').value.trim(),
+    description:              document.getElementById('fieldDesc').value,
+    google_client_id:         document.getElementById('fieldClientId').value.trim(),
+    google_client_secret:     document.getElementById('fieldClientSecret').value.trim(),
+    google_drive_folder_id:   document.getElementById('fieldFolderId').value.trim(),
+    google_drive_folder_name: document.getElementById('fieldFolderName').value.trim(),
+  };
+}
+
+function discardChanges(){
+  document.getElementById('fieldName').value          = ORIGINAL.name;
+  document.getElementById('fieldDesc').value          = ORIGINAL.description;
+  document.getElementById('fieldClientId').value      = ORIGINAL.google_client_id;
+  document.getElementById('fieldClientSecret').value  = ORIGINAL.google_client_secret;
+  document.getElementById('fieldFolderId').value      = ORIGINAL.google_drive_folder_id;
+  document.getElementById('fieldFolderName').value    = ORIGINAL.google_drive_folder_name;
+  dirty = false;
+  document.getElementById('saveBar').classList.remove('visible');
+  updateDriveStatus();
+}
+
+async function saveSettings(){
+  var btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    var resp = await fetch('/api/projects/'+PROJECT_ID+'/settings/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify(getCurrent()),
+    });
+    var text = await resp.text();
+    if(!resp.ok){
+      console.error('Save failed', resp.status, text);
+      showToast('Save failed ('+resp.status+')', 'error');
+      return;
+    }
+    var data;
+    try { data = JSON.parse(text); }
+    catch(e){ showToast('Bad response from server', 'error'); return; }
+    Object.assign(ORIGINAL, getCurrent());
+    document.title = data.name + ' — Settings — Claro Historia';
+    var bl = document.querySelector('.back-link');
+    if(bl) bl.textContent = '← ' + data.name;
+    dirty = false;
+    document.getElementById('saveBar').classList.remove('visible');
+    showToast('Settings saved', 'success');
+    updateDriveStatus();
+  } catch(e) {
+    console.error('saveSettings error:', e);
+    showToast('Network error — check console', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+
+// ── Secret toggle ─────────────────────────────────────────────────────────
+function toggleSecret(){
+  var inp = document.getElementById('fieldClientSecret');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ── Drive folder status ───────────────────────────────────────────────────
+function updateDriveStatus(){
+  var v = document.getElementById('fieldFolderId').value.trim();
+  var dot = document.getElementById('driveDot');
+  var txt = document.getElementById('driveStatusText');
+  if(!dot || !txt) return;
+  dot.className = 'drive-dot' + (v ? ' connected' : '');
+  txt.textContent = v ? 'Folder linked' : 'Not linked';
+}
+
+// ── OAuth connect / disconnect ────────────────────────────────────────────
+function connectOAuth(){
+  var clientId     = document.getElementById('fieldClientId').value.trim();
+  var clientSecret = document.getElementById('fieldClientSecret').value.trim();
+  if(!clientId || !clientSecret){
+    showToast('Save your Client ID and Secret first', 'error');
+    return;
+  }
+  if(dirty){
+    showToast('Save your changes first, then connect', 'error');
+    return;
+  }
+  // Full-page redirect to OAuth start — Django handles the rest
+  window.location.href = '/api/projects/'+PROJECT_ID+'/drive/oauth/start/';
+}
+
+async function disconnectOAuth(){
+  if(!confirm('Disconnect Google Drive? You can reconnect at any time.')) return;
+  try {
+    var resp = await fetch('/api/projects/'+PROJECT_ID+'/drive/oauth/disconnect/', {
+      method: 'POST',
+      headers: {'X-CSRFToken': getCookie('csrftoken')},
+    });
+    if(!resp.ok) throw new Error();
+    showToast('Disconnected', 'success');
+    setTimeout(function(){ window.location.reload(); }, 900);
+  } catch(e){
+    showToast('Disconnect failed', 'error');
+  }
+}
+
+// ── Add to dashboard ──────────────────────────────────────────────────────
+async function addToDashboard(){
+  var sel = document.getElementById('addToDashSelect');
+  var dbId = sel.value;
+  if(!dbId){ showToast('Select a dashboard first', 'error'); return; }
+  try {
+    var resp = await fetch('/api/dashboards/'+dbId+'/projects/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+      body: JSON.stringify({project_id: PROJECT_ID}),
+    });
+    if(!resp.ok) throw new Error();
+    showToast('Added to dashboard', 'success');
+    setTimeout(function(){ window.location.reload(); }, 900);
+  } catch(e){
+    showToast('Failed to add to dashboard', 'error');
+  }
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────
+async function confirmDelete(){
+  if(!confirm('Delete "'+ORIGINAL.name+'" and all its milestones and events? This cannot be undone.')) return;
+  try {
+    var resp = await fetch('/api/projects/'+PROJECT_ID+'/delete/', {
+      method: 'DELETE',
+      headers: {'X-CSRFToken':getCookie('csrftoken')},
+    });
+    if(!resp.ok) throw new Error();
+    window.location.href = '/';
+  } catch(e){
+    showToast('Delete failed', 'error');
+  }
+}
+
+// ── Sidebar nav ───────────────────────────────────────────────────────────
+function setActive(el){
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+}
+var sections = ['general','integrations','drive-files','about','danger'];
+window.addEventListener('scroll', function(){
+  var scrollY = window.scrollY + 120;
+  sections.forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    if(el.offsetTop <= scrollY && el.offsetTop + el.offsetHeight > scrollY){
+      document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+      var link = document.querySelector('.nav-item[href="#'+id+'"]');
+      if(link) link.classList.add('active');
+    }
+  });
+}, {passive:true});
+
+// ── Unsaved warning ───────────────────────────────────────────────────────
+window.addEventListener('beforeunload', function(e){
+  if(dirty){ e.preventDefault(); e.returnValue=''; }
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg, type){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type||'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+// ── Cookie util ───────────────────────────────────────────────────────────
+function getCookie(name){
+  var m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+
+// ── Drive Files ───────────────────────────────────────────────────────────────
+var DRIVE_CONFIGURED = {{ oauth_connected|yesno:"true,false" }} && {{ project.google_drive_folder_id|yesno:"true,false" }};
+var driveAllFiles = [];
+var driveNextPageToken = '';
+var drivePageHistory = [''];
+
+function fmtDate(iso){
+  if(!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderFiles(files){
+  var wrap = document.getElementById('driveFilesWrap');
+  if(!wrap) return;
+  if(!files.length){
+    wrap.innerHTML = '<div class="drive-empty">No files found in this folder.</div>';
+    return;
+  }
+  var header = '<div class="file-row header"><div></div><div>Name</div><div>Type</div><div>Modified</div><div></div></div>';
+  var rows = files.map(function(f){
+    var isFolder = f.mimeType === 'application/vnd.google-apps.folder';
+    var nameHtml = f.webViewLink
+      ? '<a href="'+f.webViewLink+'" target="_blank" rel="noopener">'+escHtml(f.name)+'</a>'
+      : escHtml(f.name);
+    var actions = f.webViewLink
+      ? '<button class="file-action-btn" onclick="window.open(\''+f.webViewLink+'\',\'_blank\')">Open ↗</button>'
+      : '';
+    if(isFolder){
+      actions += ' <button class="file-action-btn" onclick="drillDown(\''+f.id+'\',\''+escHtml(f.name).replace(/'/g,'&#39;')+'\')">Browse →</button>';
+    }
+    return '<div class="file-row" data-name="'+escHtml(f.name).toLowerCase()+'">'
+      +'<div class="file-icon">'+f._icon+'</div>'
+      +'<div class="file-name">'+nameHtml+'</div>'
+      +'<div class="file-type">'+escHtml(f._typeLabel)+'</div>'
+      +'<div class="file-date">'+fmtDate(f.modifiedTime)+'</div>'
+      +'<div class="file-actions">'+actions+'</div>'
+      +'</div>';
+  }).join('');
+  var pager = '<div class="drive-pager">'
+    +'<button class="btn btn-sm" onclick="pageBack()" '+(drivePageHistory.length > 1 ? '' : 'disabled style="opacity:.4"')+'>← Back</button>'
+    +'<span>'+files.length+' items</span>'
+    +'<button class="btn btn-sm" onclick="pageNext()" '+(driveNextPageToken ? '' : 'disabled style="opacity:.4"')+'>Next →</button>'
+    +'</div>';
+  wrap.innerHTML = '<div class="file-list">'+header+rows+'</div>'+pager;
+}
+
+async function loadDriveFiles(pageToken, folderIdOverride){
+  var wrap = document.getElementById('driveFilesWrap');
+  if(!wrap || !DRIVE_CONFIGURED) return;
+  wrap.innerHTML = '<div class="drive-loading">Loading files</div>';
+  var btn = document.getElementById('btnRefresh');
+  if(btn){ btn.disabled=true; btn.textContent='↻ Loading…'; }
+  var url = '/api/projects/'+PROJECT_ID+'/drive/files/';
+  var qs = [];
+  if(pageToken) qs.push('pageToken='+encodeURIComponent(pageToken));
+  if(folderIdOverride) qs.push('folderId='+encodeURIComponent(folderIdOverride));
+  if(qs.length) url += '?' + qs.join('&');
+  try {
+    var resp = await fetch(url, {headers:{'X-CSRFToken':getCookie('csrftoken')}});
+    var data = await resp.json();
+    if(!resp.ok){
+      var hint = (data.error === 'not_connected' || data.error === 'token_expired')
+        ? ' <a href="#integrations" style="color:var(--accent)">Reconnect →</a>' : '';
+      wrap.innerHTML = '<div class="drive-error">⚠ '+escHtml(data.message||'Error')+hint+'</div>';
+      return;
+    }
+    driveAllFiles = data.files || [];
+    driveNextPageToken = data.nextPageToken || '';
+    renderFiles(driveAllFiles);
+    var s = document.getElementById('driveSearch');
+    if(s) s.value = '';
+  } catch(e){
+    wrap.innerHTML = '<div class="drive-error">⚠ Failed to reach the server.</div>';
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='↻ Refresh'; }
+  }
+}
+
+function pageNext(){
+  if(!driveNextPageToken) return;
+  drivePageHistory.push(driveNextPageToken);
+  loadDriveFiles(driveNextPageToken);
+}
+function pageBack(){
+  if(drivePageHistory.length <= 1) return;
+  drivePageHistory.pop();
+  var token = drivePageHistory[drivePageHistory.length-1];
+  loadDriveFiles(token || undefined);
+}
+function drillDown(folderId, folderName){
+  drivePageHistory = [''];
+  driveNextPageToken = '';
+  var p = document.getElementById('drivePath');
+  if(p) p.textContent = '📁 '+folderName;
+  loadDriveFiles(undefined, folderId);
+}
+function filterFiles(q){
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.file-list .file-row:not(.header)').forEach(function(r){
+    r.style.display = (!q || (r.getAttribute('data-name')||'').includes(q)) ? '' : 'none';
+  });
+}
+
+if(DRIVE_CONFIGURED){ loadDriveFiles(); }
+</script>
+</body>
+</html>

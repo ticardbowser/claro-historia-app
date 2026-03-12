@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Claro Historia</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1f1f1f;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.15);
+  --text:#e8e4de;--muted:#5a5650;
+  --accent:#e8a246;--danger:#c45050;
+}
+body{font-family:'Inconsolata',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.wrap{width:100%;max-width:400px}
+.logo{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:.04em;text-align:center;margin-bottom:2.5rem}
+.logo span{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.35rem}
+.card-sub{font-size:.78rem;color:var(--muted);margin-bottom:1.75rem}
+.fg{margin-bottom:1.1rem}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+label{display:block;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem}
+input[type=text],input[type=password]{width:100%;background:var(--bg);border:1px solid var(--border-hi);border-radius:2px;padding:.65rem .8rem;font-family:'Inconsolata',monospace;font-size:.9rem;color:var(--text);outline:none;transition:border-color .15s}
+input:focus{border-color:var(--accent)}
+.divider{height:1px;background:var(--border);margin:1.25rem 0}
+.btn{width:100%;font-family:'Inconsolata',monospace;font-size:.85rem;font-weight:600;padding:.7rem;border-radius:2px;border:none;background:var(--accent);color:#0e0e0e;cursor:pointer;transition:background .15s;margin-top:.5rem}
+.btn:hover{background:#d4923c}
+.error{font-size:.78rem;color:var(--danger);background:rgba(196,80,80,.08);border:1px solid rgba(196,80,80,.2);border-radius:2px;padding:.55rem .75rem;margin-bottom:1.1rem}
+.footer{text-align:center;margin-top:1.25rem;font-size:.75rem;color:var(--muted)}
+.footer a{color:var(--accent);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+.hint{font-size:.68rem;color:var(--muted);margin-top:.25rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Claro <span>Historia</span></div>
+  <div class="card">
+    <div class="card-title">Create account</div>
+    <div class="card-sub">Set up your Claro Historia workspace</div>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="frow">
+        <div class="fg">
+          <label>First Name <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="text" name="first_name" autocomplete="given-name" placeholder="Jordan">
+        </div>
+        <div class="fg">
+          <label>Last Name <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="text" name="last_name" autocomplete="family-name" placeholder="Ellis">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="fg">
+        <label>Username</label>
+        <input type="text" name="username" autofocus autocomplete="username" placeholder="jordan_ellis">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" name="password" autocomplete="new-password" placeholder="••••••••">
+      </div>
+      <div class="fg">
+        <label>Confirm Password</label>
+        <input type="password" name="password2" autocomplete="new-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn">Create Account</button>
+    </form>
+  </div>
+  <div class="footer">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+</div>
+</body>
+</html>

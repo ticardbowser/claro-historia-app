@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Analysis — Claro Historia</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1a1a1a;--surface3:#202020;
+  --border:rgba(255,255,255,0.06);--border-hi:rgba(255,255,255,0.13);
+  --text:#e8e4de;--muted:#58544f;--muted2:#7a7470;
+  --accent:#e8a246;--accent2:#4a9e7a;--danger:#c45050;
+  --ev-hire:#5b8fd4;--ev-depart:#c47a5a;--ev-reorg:#9b6fc4;
+  --ev-tech:#4ab8c4;--ev-risk:#c45050;--ev-note:#8a8680;
+  --c-complete:#4a9e7a;--c-inprog:#e8a246;--c-pending:#454340;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inconsolata',monospace;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:60;background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.05em;flex-shrink:0}
+.logo span{color:var(--accent)}
+.hdr-left{display:flex;align-items:center;gap:1rem}
+.back-link{font-size:.72rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.25rem .6rem;border-radius:2px;transition:all .15s;white-space:nowrap}
+.back-link:hover{color:var(--accent);border-color:rgba(232,162,70,.4)}
+.page-badge{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);border:1px solid rgba(232,162,70,.3);padding:.2rem .6rem;border-radius:2px;background:rgba(232,162,70,.06)}
+
+/* ── Layout ── */
+main{max-width:1200px;margin:0 auto;padding:2.5rem 2rem 8rem}
+.section{margin-bottom:3rem}
+.section-hdr{font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-hdr-left{display:flex;align-items:center;gap:.6rem}
+.section-hdr-icon{font-size:.9rem;opacity:.7}
+
+/* ── Project selector ── */
+.selector-wrap{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.selector-inner{padding:1.5rem}
+.selector-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1rem}
+.proj-checkboxes{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+.proj-cb-label{display:flex;align-items:center;gap:.5rem;font-size:.8rem;cursor:pointer;padding:.4rem .75rem;border:1px solid var(--border);border-radius:2px;background:var(--surface2);transition:all .15s;user-select:none}
+.proj-cb-label:hover{border-color:var(--border-hi);background:var(--surface3)}
+.proj-cb-label.checked{border-color:rgba(232,162,70,.5);background:rgba(232,162,70,.07)}
+.proj-cb-label input{display:none}
+.proj-cb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--muted);transition:background .15s}
+.proj-cb-label.checked .proj-cb-dot{background:var(--accent)}
+.selector-actions{display:flex;align-items:center;gap:.75rem;padding-top:1rem;border-top:1px solid var(--border)}
+.btn{font-family:'Inconsolata',monospace;font-size:.8rem;font-weight:500;padding:.45rem .9rem;border-radius:2px;border:1px solid var(--border-hi);background:transparent;color:var(--text);cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#0a0a0a;font-weight:600}
+.btn-p:hover{background:#d4923c;border-color:#d4923c;color:#0a0a0a}
+.sel-count{font-size:.72rem;color:var(--muted2)}
+
+/* ── Legend ── */
+.legend{display:flex;flex-wrap:wrap;gap:.65rem;margin-bottom:2rem}
+.legend-item{display:flex;align-items:center;gap:.45rem;font-size:.75rem;color:var(--muted2)}
+.legend-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.legend-name{font-weight:500;color:var(--text)}
+
+/* ── Comparison table ── */
+.compare-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.compare-table th{font-family:'Syne',sans-serif;font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:.6rem 1rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap}
+.compare-table th:first-child{min-width:180px}
+.compare-table td{padding:.7rem 1rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table tr:hover td{background:var(--surface2)}
+.ct-proj-name{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:.55rem}
+.ct-color-bar{width:3px;height:1.1rem;border-radius:1px;flex-shrink:0}
+.ct-num{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700}
+.ct-num.g{color:var(--c-complete)}.ct-num.a{color:var(--c-inprog)}.ct-num.r{color:var(--danger)}
+.ct-pct-cell{min-width:160px}
+.ct-prog{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:.3rem}
+.ct-fill{height:100%;border-radius:3px}
+.ct-pct-label{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;margin-bottom:.2rem}
+
+/* ── Timeline ── */
+.timeline-wrap{overflow-x:auto;padding-bottom:.5rem}
+.tl-wrap{overflow-x:auto;padding-bottom:.5rem}
+.tl-inner{min-width:600px;padding:0 1rem}
+.tl-label-col{width:160px;flex-shrink:0}
+.tl-track-col{flex:1;min-width:0;position:relative}
+.tl-axis-row{display:flex;align-items:flex-end;height:20px;margin-bottom:.6rem}
+.tl-axis-track{flex:1;position:relative;height:100%}
+.tl-axis-tick{position:absolute;transform:translateX(-50%);font-size:.52rem;color:var(--muted);white-space:nowrap;bottom:0;line-height:1}
+.tl-proj-row{display:flex;align-items:center;margin-bottom:1.1rem}
+.tl-proj-label{width:160px;flex-shrink:0;font-size:.72rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.45rem;padding-right:1rem}
+.tl-proj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tl-track{flex:1;height:24px;background:var(--surface2);border-radius:3px;position:relative}
+.tl-ms-dot{position:absolute;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--surface);cursor:pointer;transition:transform .12s,box-shadow .12s;z-index:2}
+.tl-ms-dot:hover{transform:translate(-50%,-50%) scale(1.7);box-shadow:0 0 0 3px rgba(255,255,255,.1)}
+.tl-today-line{position:absolute;top:-6px;bottom:-6px;width:1px;background:rgba(232,162,70,.55);z-index:1;pointer-events:none}
+.tl-today-lbl{position:absolute;top:-18px;left:3px;font-size:.48rem;color:var(--accent);white-space:nowrap;letter-spacing:.08em;text-transform:uppercase}
+.tl-separator{height:1px;background:var(--border);margin:.25rem 0 1rem 160px}
+
+/* ── Activity bars ── */
+.activity-grid{display:grid;gap:1.25rem}
+.act-row{display:flex;align-items:center;gap:.75rem}
+.act-label{width:150px;flex-shrink:0;font-size:.72rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.45rem}
+.act-bars{flex:1;display:flex;align-items:flex-end;gap:2px;height:40px}
+.act-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.act-bar{width:100%;border-radius:1px 1px 0 0;min-height:1px;opacity:.8;transition:opacity .15s;cursor:default}
+.act-bar:hover{opacity:1}
+
+/* ── Category matrix ── */
+.cat-matrix{width:100%;border-collapse:collapse;font-size:.75rem}
+.cat-matrix th{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;background:var(--surface)}
+.cat-matrix td{padding:.5rem .75rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.cat-matrix tr:last-child td{border-bottom:none}
+.cat-matrix tr:hover td{background:var(--surface2)}
+.cat-name-cell{font-size:.78rem;color:var(--muted2);white-space:nowrap}
+.cat-cell-inner{display:flex;align-items:center;gap:.5rem}
+.cat-pip{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cat-count-badge{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:600;min-width:20px;text-align:center}
+.cat-bar-mini{height:4px;border-radius:2px;transition:width .4s ease}
+
+/* ── Owner table ── */
+.owner-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.owner-table th{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--border);background:var(--surface);text-align:left;white-space:nowrap}
+.owner-table td{padding:.6rem .75rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.owner-table tr:last-child td{border-bottom:none}
+.owner-table tr:hover td{background:var(--surface2)}
+.owner-name{font-size:.8rem;color:var(--text);white-space:nowrap}
+.owner-cell-bar{height:4px;border-radius:2px;margin-top:.3rem;transition:width .4s ease}
+.owner-total{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent)}
+
+/* ── Risks section ── */
+.risks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.25rem}
+.risk-proj-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.25rem}
+.risk-proj-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.9rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.risk-proj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.risk-proj-name{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:600}
+.risk-proj-count{font-size:.68rem;color:var(--danger);background:rgba(196,80,80,.1);border:1px solid rgba(196,80,80,.2);padding:.1rem .4rem;border-radius:2px;margin-left:auto}
+.risk-item{display:flex;gap:.65rem;margin-bottom:.65rem;padding-bottom:.65rem;border-bottom:1px solid var(--border)}
+.risk-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.risk-dot{width:6px;height:6px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:.35rem}
+.risk-dot.resolved{background:var(--c-complete)}
+.risk-title{font-size:.78rem;line-height:1.4;color:var(--text)}
+.risk-date{font-size:.65rem;color:var(--muted);margin-top:.2rem}
+.risk-none{font-size:.75rem;color:var(--muted);font-style:italic;padding:.5rem 0}
+
+/* ── Event type heatmap ── */
+.etype-compare{width:100%;border-collapse:collapse;font-size:.78rem}
+.etype-compare th{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--border);background:var(--surface);text-align:left;white-space:nowrap}
+.etype-compare td{padding:.55rem .75rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.etype-compare tr:last-child td{border-bottom:none}
+.etype-compare tr:hover td{background:var(--surface2)}
+.etype-label-cell{display:flex;align-items:center;gap:.55rem;font-size:.78rem;white-space:nowrap}
+.etype-icon{font-size:.85rem;width:1.1rem;text-align:center}
+.etype-heat-cell{position:relative}
+.etype-heat{display:flex;align-items:center;gap:.5rem}
+.etype-heat-bar{height:6px;border-radius:3px;transition:width .4s ease;min-width:2px}
+.etype-heat-num{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:600;min-width:18px}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:5rem 2rem;border:1px dashed var(--border);border-radius:4px}
+.empty-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--muted);margin-bottom:.5rem}
+.empty-sub{font-size:.82rem;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.6}
+
+/* ── Tooltip ── */
+.tt{position:fixed;z-index:200;background:var(--surface3);border:1px solid var(--border-hi);border-radius:3px;padding:.45rem .7rem;font-size:.72rem;color:var(--text);pointer-events:none;opacity:0;transition:opacity .12s;max-width:240px;line-height:1.5}
+.tt.show{opacity:1}
+.tt-title{font-family:'Syne',sans-serif;font-weight:600;font-size:.75rem;margin-bottom:.2rem}
+.tt-meta{color:var(--muted2);font-size:.68rem}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.tab{font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:500;padding:.55rem 1.1rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+@media(max-width:700px){
+  main{padding:1.5rem 1rem 6rem}
+  .tl-proj-label{width:100px;font-size:.65rem}
+  .tl-axis{margin-left:105px}
+  .tl-separator{margin-left:105px}
+  .act-label{width:100px;font-size:.65rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <div class="logo">Claro <span>Historia</span></div>
+    <a href="{% url 'dashboards_home' %}" class="back-link">← Dashboards</a>
+  </div>
+  <div class="page-badge">Cross-Project Analysis</div>
+</header>
+
+<main>
+
+  <!-- ── Project Selector ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-hdr-left">
+        <span class="section-hdr-icon">⊞</span> Select Projects to Compare
+      </div>
+    </div>
+    <div class="selector-wrap">
+      <div class="selector-inner">
+        <div class="selector-label">Choose up to 8 projects</div>
+        <div class="proj-checkboxes" id="projCbs">
+          {% for project in all_projects %}
+          <label class="proj-cb-label{% if project.id in selected_ids %} checked{% endif %}" data-id="{{ project.id }}">
+            <input type="checkbox" value="{{ project.id }}"{% if project.id in selected_ids %} checked{% endif %}>
+            <span class="proj-cb-dot"></span>
+            {{ project.name }}
+          </label>
+          {% endfor %}
+        </div>
+        <div class="selector-actions">
+          <button class="btn btn-p" onclick="applySelection()">Compare Selected</button>
+          <button class="btn" onclick="clearAll()">Clear</button>
+          <span class="sel-count" id="selCount">{% if selected_ids %}{{ selected_ids|length }} selected{% else %}0 selected{% endif %}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if has_selection %}
+
+  <!-- ── Legend ── -->
+  <div class="legend">
+    {% for pd in project_data %}
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:{{ pd.color }}"></div>
+      <span class="legend-name">{{ pd.project.name }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab" onclick="showTab('timeline',this)">Timeline</button>
+    <button class="tab" onclick="showTab('activity',this)">Activity</button>
+    <button class="tab" onclick="showTab('categories',this)">Categories</button>
+    <button class="tab" onclick="showTab('events',this)">Events</button>
+    <button class="tab" onclick="showTab('owners',this)">Owners</button>
+    <button class="tab" onclick="showTab('risks',this)">Risks{% if project_data %}<span id="riskBadge"></span>{% endif %}</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: OVERVIEW
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-overview">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">◈</span> Milestone Progress</div></div>
+      <div style="overflow-x:auto">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Progress</th>
+              <th>Total</th>
+              <th>Complete</th>
+              <th>In Progress</th>
+              <th>Pending</th>
+              <th>Events</th>
+              <th>Open Risks</th>
+              <th>Date Span</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pd in project_data %}
+            <tr>
+              <td>
+                <div class="ct-proj-name">
+                  <div class="ct-color-bar" style="background:{{ pd.color }}"></div>
+                  <a href="{% url 'index' pd.project.id %}" style="color:inherit;text-decoration:none;transition:color .15s" onmouseover="this.style.color='{{ pd.color }}'" onmouseout="this.style.color='inherit'">{{ pd.project.name }}</a>
+                </div>
+              </td>
+              <td class="ct-pct-cell">
+                <div class="ct-pct-label" style="color:{{ pd.color }}">{{ pd.pct }}%</div>
+                <div class="ct-prog"><div class="ct-fill" style="width:{{ pd.pct }}%;background:{{ pd.color }}"></div></div>
+              </td>
+              <td><span class="ct-num">{{ pd.n_total }}</span></td>
+              <td><span class="ct-num g">{{ pd.n_complete }}</span></td>
+              <td><span class="ct-num a">{{ pd.n_inprog }}</span></td>
+              <td><span class="ct-num" style="color:var(--muted2)">{{ pd.n_pending }}</span></td>
+              <td><span class="ct-num" style="color:var(--ev-tech)">{{ pd.n_events }}</span></td>
+              <td><span class="ct-num{% if pd.n_risks_open > 0 %} r{% endif %}">{{ pd.n_risks_open }}</span></td>
+              <td style="font-size:.72rem;color:var(--muted2);white-space:nowrap">
+                {% if pd.span_start %}{{ pd.span_start }} → {{ pd.span_end }}{% else %}—{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: TIMELINE
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-timeline">
+    <div class="section">
+      <div class="section-hdr">
+        <div class="section-hdr-left"><span class="section-hdr-icon">⟶</span> Milestone Timeline</div>
+        <span style="font-size:.65rem;color:var(--muted);font-weight:400">Hover dots for details · ● complete &nbsp; ● in-progress &nbsp; ○ pending</span>
+      </div>
+      <div class="timeline-wrap">
+        <div class="timeline-grid" id="tlGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: ACTIVITY
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-activity">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">▮</span> Monthly Activity (milestones + events)</div></div>
+      <div id="activityViz"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: CATEGORIES
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-categories">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">⊕</span> Milestone Categories by Project</div></div>
+      <div style="overflow-x:auto" id="catTable"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: EVENTS
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-events">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">◆</span> Event Type Breakdown</div></div>
+      <div style="overflow-x:auto" id="eventTable"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: OWNERS
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-owners">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">◉</span> Owner Activity Across Projects</div></div>
+      <div style="overflow-x:auto" id="ownerTable"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB: RISKS
+  ═══════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-risks">
+    <div class="section">
+      <div class="section-hdr"><div class="section-hdr-left"><span class="section-hdr-icon">⚠</span> Risks & Blockers</div></div>
+      <div class="risks-grid">
+        {% for pd in project_data %}
+        <div class="risk-proj-card">
+          <div class="risk-proj-hdr">
+            <div class="risk-proj-dot" style="background:{{ pd.color }}"></div>
+            <div class="risk-proj-name">{{ pd.project.name }}</div>
+            {% if pd.n_risks_open > 0 %}
+            <div class="risk-proj-count">{{ pd.n_risks_open }} open</div>
+            {% endif %}
+          </div>
+          {% if pd.open_risks %}
+            {% for ev in pd.open_risks %}
+            <div class="risk-item">
+              <div class="risk-dot"></div>
+              <div>
+                <div class="risk-title">{{ ev.title }}</div>
+                <div class="risk-date">{{ ev.date|default:"No date" }}{% if ev.owner %} · {{ ev.owner }}{% endif %}</div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="risk-none">No open risks</div>
+          {% endif %}
+          {% if pd.resolved_risks %}
+          <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem">Resolved ({{ pd.n_risks_resolved }})</div>
+            {% for ev in pd.resolved_risks %}
+            <div class="risk-item">
+              <div class="risk-dot resolved"></div>
+              <div>
+                <div class="risk-title" style="text-decoration:line-through;color:var(--muted2)">{{ ev.title }}</div>
+                <div class="risk-date">{{ ev.date|default:"" }}{% if ev.owner %} · {{ ev.owner }}{% endif %}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="empty-state">
+    <div class="empty-title">Select projects to compare</div>
+    <div class="empty-sub">Choose two or more projects above to see a side-by-side analysis of progress, timelines, activity, categories, owners, and risks.</div>
+  </div>
+
+  {% endif %}
+</main>
+
+<div class="tt" id="tooltip"></div>
+
+<script>
+// ── Data from Django ──────────────────────────────────────────────────────────
+var MONTHS_KEYS   = {{ months_axis|safe }};
+var MONTHS_LABELS = {{ months_labels|safe }};
+var PROJECT_DATA  = [
+  {% for pd in project_data %}
+  {
+    id: {{ pd.project.id }},
+    name: "{{ pd.project.name|escapejs }}",
+    color: '{{ pd.color }}',
+    milestones: {{ pd.milestones_json|safe }},
+    events: {{ pd.events_json|safe }},
+    monthly: {{ pd.monthly_json|safe }},
+    etypes: {{ pd.etypes_json|safe }},
+    cats: {{ pd.cats_json|safe }},
+    owners: {{ pd.owners_json|safe }},
+  },
+  {% endfor %}
+];
+
+// ── Selector logic ────────────────────────────────────────────────────────────
+var selectedIds = new Set([{% for id in selected_ids %}{{ id }},{% endfor %}]);
+
+document.querySelectorAll('.proj-cb-label').forEach(function(lbl){
+  lbl.addEventListener('click', function(){
+    var cb = lbl.querySelector('input');
+    var id = parseInt(lbl.dataset.id);
+    if(cb.checked){
+      // Already checked, uncheck
+      cb.checked = false;
+      lbl.classList.remove('checked');
+      selectedIds.delete(id);
+    } else {
+      if(selectedIds.size >= 8){ alert('Maximum 8 projects can be compared at once.'); return; }
+      cb.checked = true;
+      lbl.classList.add('checked');
+      selectedIds.add(id);
+    }
+    document.getElementById('selCount').textContent = selectedIds.size + ' selected';
+  });
+});
+
+function applySelection(){
+  if(selectedIds.size < 1){ alert('Please select at least one project.'); return; }
+  var params = Array.from(selectedIds).map(function(id){ return 'p='+id; }).join('&');
+  window.location.href = '/analysis/?' + params;
+}
+function clearAll(){
+  document.querySelectorAll('.proj-cb-label').forEach(function(lbl){
+    lbl.classList.remove('checked');
+    lbl.querySelector('input').checked = false;
+  });
+  selectedIds.clear();
+  document.getElementById('selCount').textContent = '0 selected';
+}
+
+// ── Tab logic ─────────────────────────────────────────────────────────────────
+function showTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+var tt = document.getElementById('tooltip');
+function showTip(e, html){
+  tt.innerHTML = html;
+  tt.classList.add('show');
+  moveTip(e);
+}
+function moveTip(e){
+  var x = e.clientX + 14, y = e.clientY - 10;
+  if(x + 250 > window.innerWidth) x = e.clientX - 260;
+  tt.style.left = x+'px'; tt.style.top = y+'px';
+}
+function hideTip(){ tt.classList.remove('show'); }
+document.addEventListener('mousemove', function(e){
+  if(tt.classList.contains('show')) moveTip(e);
+});
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function fd(d){
+  if(!d) return '';
+  var p = d.split('-');
+  return new Date(p[0], p[1]-1, p[2]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIMELINE  — DOM-based, no inline event handlers
+// ─────────────────────────────────────────────────────────────────────────────
+(function buildTimeline(){
+  if(!PROJECT_DATA.length) return;
+  var container = document.getElementById('tlGrid');
+  if(!container) return;
+
+  // Collect timestamp range
+  var allTs = [];
+  PROJECT_DATA.forEach(function(pd){
+    pd.milestones.forEach(function(m){ if(m.date) allTs.push(+new Date(m.date+'T00:00:00')); });
+  });
+  if(!allTs.length){
+    container.innerHTML = '<p style="color:var(--muted);font-size:.8rem;padding:.5rem">No dated milestones.</p>';
+    return;
+  }
+
+  var minTs = Math.min.apply(null, allTs);
+  var maxTs = Math.max.apply(null, allTs);
+  var pad   = 35 * 86400000;
+  minTs -= pad; maxTs += pad;
+  var span  = maxTs - minTs;
+
+  function pct(dateStr){ return ((+new Date(dateStr+'T00:00:00') - minTs) / span * 100); }
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'padding:0 .5rem';
+
+  // ── Axis ──
+  var axisRow = document.createElement('div');
+  axisRow.style.cssText = 'display:flex;align-items:flex-end;margin-bottom:.75rem';
+
+  var axisSpacer = document.createElement('div');
+  axisSpacer.style.cssText = 'width:160px;flex-shrink:0';
+  axisRow.appendChild(axisSpacer);
+
+  var axisTrack = document.createElement('div');
+  axisTrack.style.cssText = 'flex:1;position:relative;height:18px;';
+
+  var cur = new Date(minTs);
+  cur.setDate(1);
+  if(cur < new Date(minTs)) cur.setMonth(cur.getMonth()+1);
+  var ticks = 0;
+  while(+cur <= maxTs && ticks < 25){
+    var p = pct(cur.toISOString().slice(0,10));
+    if(p >= 0 && p <= 100){
+      var tick = document.createElement('span');
+      tick.style.cssText = 'position:absolute;font-size:.5rem;color:var(--muted);white-space:nowrap;transform:translateX(-50%);bottom:0;line-height:1;letter-spacing:.03em';
+      tick.style.left = p.toFixed(1)+'%';
+      tick.textContent = cur.toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+      axisTrack.appendChild(tick);
+    }
+    cur.setMonth(cur.getMonth()+2);
+    ticks++;
+  }
+  axisRow.appendChild(axisTrack);
+  wrap.appendChild(axisRow);
+
+  // Today %
+  var todayPct = ((Date.now() - minTs) / span * 100);
+  var showToday = todayPct >= 0 && todayPct <= 100;
+
+  // Store tooltip data keyed by element to avoid inline handlers
+  var tipStore = new WeakMap();
+
+  // ── Project rows ──
+  PROJECT_DATA.forEach(function(pd, ri){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;margin-bottom:1rem';
+
+    // Label
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'width:160px;flex-shrink:0;display:flex;align-items:center;gap:.45rem;padding-right:.75rem;font-size:.72rem;color:var(--muted2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis';
+    var ldot = document.createElement('div');
+    ldot.style.cssText = 'width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+pd.color;
+    lbl.appendChild(ldot);
+    lbl.appendChild(document.createTextNode(pd.name));
+    row.appendChild(lbl);
+
+    // Track
+    var track = document.createElement('div');
+    track.style.cssText = 'flex:1;height:26px;background:var(--surface2);border-radius:3px;position:relative;overflow:visible';
+
+    // Today line
+    if(showToday){
+      var tl = document.createElement('div');
+      tl.style.cssText = 'position:absolute;top:-5px;bottom:-5px;width:1px;background:rgba(232,162,70,.5);z-index:1;pointer-events:none;left:'+todayPct.toFixed(2)+'%';
+      if(ri === 0){
+        var tlbl = document.createElement('span');
+        tlbl.textContent = 'today';
+        tlbl.style.cssText = 'position:absolute;top:-16px;left:3px;font-size:.48rem;color:var(--accent);white-space:nowrap;letter-spacing:.07em;text-transform:uppercase';
+        tl.appendChild(tlbl);
+      }
+      track.appendChild(tl);
+    }
+
+    // Milestone dots
+    pd.milestones.forEach(function(m){
+      if(!m.date) return;
+      var p = pct(m.date);
+      if(p < -1 || p > 101) return;
+
+      var d = document.createElement('div');
+      d.style.cssText = 'position:absolute;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--surface);cursor:pointer;transition:transform .12s,box-shadow .12s;z-index:2;left:'+p.toFixed(2)+'%';
+
+      if(m.status === 'complete'){
+        d.style.background = pd.color;
+      } else if(m.status === 'in-progress'){
+        d.style.background = pd.color;
+        d.style.opacity = '.5';
+        d.style.borderStyle = 'dashed';
+      } else {
+        d.style.background = 'transparent';
+        d.style.borderColor = pd.color;
+        d.style.opacity = '.4';
+      }
+
+      tipStore.set(d, {m:m, color:pd.color});
+
+      d.addEventListener('mouseenter', function(e){
+        var t = tipStore.get(d);
+        var sl = {complete:'Complete','in-progress':'In Progress',pending:'Pending'};
+        showTip(e,
+          '<div class="tt-title" style="color:'+t.color+'">'+esc(t.m.title)+'</div>'
+          +'<div class="tt-meta">'+fd(t.m.date)+' &middot; '+(sl[t.m.status]||t.m.status)+'</div>'
+          +(t.m.owner?'<div class="tt-meta">👤 '+esc(t.m.owner)+'</div>':'')
+          +(t.m.cat?'<div class="tt-meta">'+esc(t.m.cat)+'</div>':'')
+        );
+        d.style.transform='translate(-50%,-50%) scale(1.7)';
+        d.style.boxShadow='0 0 0 3px rgba(255,255,255,.1)';
+        d.style.zIndex='10';
+      });
+      d.addEventListener('mouseleave', function(){
+        hideTip();
+        d.style.transform='translate(-50%,-50%) scale(1)';
+        d.style.boxShadow='none';
+        d.style.zIndex='2';
+      });
+
+      track.appendChild(d);
+    });
+
+    row.appendChild(track);
+    wrap.appendChild(row);
+
+    if(ri < PROJECT_DATA.length-1){
+      var sep = document.createElement('div');
+      sep.style.cssText = 'height:1px;background:var(--border);margin:.1rem 0 .9rem 160px';
+      wrap.appendChild(sep);
+    }
+  });
+
+  container.innerHTML = '';
+  container.appendChild(wrap);
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIVITY
+// ─────────────────────────────────────────────────────────────────────────────
+(function buildActivity(){
+  if(!PROJECT_DATA.length || !MONTHS_KEYS.length) return;
+
+  // Find max count across all projects × months
+  var maxVal = 1;
+  PROJECT_DATA.forEach(function(pd){
+    MONTHS_KEYS.forEach(function(k){
+      var v = pd.monthly[k] || 0;
+      if(v > maxVal) maxVal = v;
+    });
+  });
+
+  var html = '<div class="activity-grid">';
+  PROJECT_DATA.forEach(function(pd){
+    var bars = MONTHS_KEYS.map(function(k, ki){
+      var v = pd.monthly[k] || 0;
+      var h = v ? Math.max(3, Math.round((v / maxVal) * 40)) : 1;
+      var lbl = MONTHS_LABELS[ki];
+      return '<div class="act-bar-wrap">'
+           + '<div class="act-bar" style="height:'+h+'px;background:'+pd.color+'" title="'+esc(lbl)+': '+v+'"></div>'
+           + '</div>';
+    }).join('');
+
+    html += '<div class="act-row">'
+          + '<div class="act-label"><div class="tl-proj-dot" style="background:'+pd.color+'"></div>'+esc(pd.name)+'</div>'
+          + '<div class="act-bars">'+bars+'</div>'
+          + '</div>';
+  });
+  html += '</div>';
+
+  // Month labels below
+  html += '<div style="display:flex;margin-left:155px;margin-top:.4rem">';
+  MONTHS_LABELS.forEach(function(l){
+    html += '<div style="flex:1;font-size:.5rem;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden">'+esc(l)+'</div>';
+  });
+  html += '</div>';
+
+  document.getElementById('activityViz').innerHTML = html;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORIES
+// ─────────────────────────────────────────────────────────────────────────────
+(function buildCategories(){
+  if(!PROJECT_DATA.length) return;
+
+  // Collect all unique categories
+  var allCats = {};
+  PROJECT_DATA.forEach(function(pd){
+    (pd.cats||[]).forEach(function(pair){ allCats[pair[0]] = (allCats[pair[0]]||0) + pair[1]; });
+  });
+  var sortedCats = Object.keys(allCats).sort(function(a,b){ return allCats[b]-allCats[a]; });
+  if(!sortedCats.length){ document.getElementById('catTable').innerHTML='<p style="color:var(--muted);font-size:.8rem;padding:.5rem">No category data.</p>'; return; }
+
+  // Find max per-cell for scaling bars
+  var maxCell = 1;
+  PROJECT_DATA.forEach(function(pd){
+    (pd.cats||[]).forEach(function(pair){ if(pair[1]>maxCell) maxCell=pair[1]; });
+  });
+
+  var html = '<table class="cat-matrix"><thead><tr><th>Category</th>';
+  PROJECT_DATA.forEach(function(pd){ html += '<th>'+esc(pd.name)+'</th>'; });
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  sortedCats.forEach(function(cat){
+    html += '<tr><td class="cat-name-cell">'+esc(cat)+'</td>';
+    PROJECT_DATA.forEach(function(pd){
+      var catMap = {};
+      (pd.cats||[]).forEach(function(pair){ catMap[pair[0]] = pair[1]; });
+      var v = catMap[cat] || 0;
+      var w = v ? Math.max(8, Math.round((v / maxCell) * 80)) : 0;
+      html += '<td>';
+      if(v){
+        html += '<div class="cat-cell-inner">'
+              + '<div style="width:'+w+'px;height:5px;border-radius:2px;background:'+pd.color+';opacity:.75;transition:width .4s"></div>'
+              + '<span class="cat-count-badge" style="color:'+pd.color+'">'+v+'</span>'
+              + '</div>';
+      } else {
+        html += '<span style="color:var(--border-hi)">—</span>';
+      }
+      html += '</td>';
+    });
+    html += '<td><strong style="font-family:Syne,sans-serif;font-size:.82rem;color:var(--accent)">'+allCats[cat]+'</strong></td></tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('catTable').innerHTML = html;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENT TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+(function buildEventTypes(){
+  if(!PROJECT_DATA.length) return;
+
+  var ETYPE_META = {
+    hire:   {icon:'👤', label:'New Hire',       color:'var(--ev-hire)'},
+    depart: {icon:'👋', label:'Departure',       color:'var(--ev-depart)'},
+    reorg:  {icon:'🔀', label:'Reorg',           color:'var(--ev-reorg)'},
+    tech:   {icon:'⚙️', label:'Technology',      color:'var(--ev-tech)'},
+    risk:   {icon:'⚠️', label:'Risk / Blocker',  color:'var(--ev-risk)'},
+    note:   {icon:'📌', label:'Note',            color:'var(--ev-note)'},
+  };
+
+  var allEtypes = Object.keys(ETYPE_META);
+  var maxVal = 1;
+  PROJECT_DATA.forEach(function(pd){
+    allEtypes.forEach(function(k){ var v=pd.etypes[k]||0; if(v>maxVal)maxVal=v; });
+  });
+
+  var html = '<table class="etype-compare"><thead><tr><th>Event Type</th>';
+  PROJECT_DATA.forEach(function(pd){ html += '<th>'+esc(pd.name)+'</th>'; });
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  allEtypes.forEach(function(k){
+    var meta = ETYPE_META[k];
+    var rowTotal = PROJECT_DATA.reduce(function(s,pd){ return s+(pd.etypes[k]||0); }, 0);
+    if(!rowTotal) return;
+    html += '<tr><td><div class="etype-label-cell"><span class="etype-icon">'+meta.icon+'</span>'+meta.label+'</div></td>';
+    PROJECT_DATA.forEach(function(pd){
+      var v = pd.etypes[k] || 0;
+      var w = v ? Math.max(6, Math.round((v / maxVal) * 100)) : 0;
+      html += '<td><div class="etype-heat">'
+            + '<div class="etype-heat-bar" style="width:'+w+'px;background:'+meta.color+'"></div>'
+            + '<span class="etype-heat-num" style="color:'+meta.color+'">'+(v||'—')+'</span>'
+            + '</div></td>';
+    });
+    html += '<td><strong style="font-family:Syne,sans-serif;font-size:.82rem;color:var(--accent)">'+rowTotal+'</strong></td></tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('eventTable').innerHTML = html;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OWNERS
+// ─────────────────────────────────────────────────────────────────────────────
+(function buildOwners(){
+  if(!PROJECT_DATA.length) return;
+
+  // Collect all owners across all projects
+  var allOwners = {};
+  PROJECT_DATA.forEach(function(pd){
+    (pd.owners||[]).forEach(function(pair){ allOwners[pair[0]] = (allOwners[pair[0]]||0) + pair[1]; });
+  });
+  var sortedOwners = Object.keys(allOwners).sort(function(a,b){ return allOwners[b]-allOwners[a]; });
+  if(!sortedOwners.length){ document.getElementById('ownerTable').innerHTML='<p style="color:var(--muted);font-size:.8rem;padding:.5rem">No owner data.</p>'; return; }
+
+  var maxTotal = Math.max.apply(null, Object.values(allOwners));
+
+  var html = '<table class="owner-table"><thead><tr><th>Owner</th>';
+  PROJECT_DATA.forEach(function(pd){ html += '<th style="color:'+pd.color+'">'+esc(pd.name)+'</th>'; });
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  sortedOwners.forEach(function(owner){
+    var total = allOwners[owner];
+    var barW = Math.max(6, Math.round((total / maxTotal) * 120));
+    html += '<tr><td class="owner-name">👤 '+esc(owner)+'</td>';
+    PROJECT_DATA.forEach(function(pd){
+      var ownerMap = {};
+      (pd.owners||[]).forEach(function(pair){ ownerMap[pair[0]] = pair[1]; });
+      var v = ownerMap[owner] || 0;
+      var cellBarW = v ? Math.max(4, Math.round((v / maxTotal) * 80)) : 0;
+      html += '<td>';
+      if(v){
+        html += '<div style="font-family:Syne,sans-serif;font-size:.8rem;font-weight:600;color:'+pd.color+'">'+v+'</div>'
+              + '<div style="width:'+cellBarW+'px;height:3px;border-radius:2px;background:'+pd.color+';opacity:.6;margin-top:.2rem"></div>';
+      } else {
+        html += '<span style="color:var(--border-hi)">—</span>';
+      }
+      html += '</td>';
+    });
+    html += '<td><span class="owner-total">'+total+'</span><div class="owner-cell-bar" style="width:'+barW+'px;background:var(--accent);opacity:.5"></div></td></tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('ownerTable').innerHTML = html;
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RISK BADGE
+// ─────────────────────────────────────────────────────────────────────────────
+(function(){
+  var totalRisks = PROJECT_DATA.reduce(function(s, pd){
+    return s + pd.events.filter(function(e){ return e.etype==='risk' && !e.resolved; }).length;
+  }, 0);
+  var el = document.getElementById('riskBadge');
+  if(el && totalRisks > 0){
+    el.innerHTML = ' <span style="display:inline-block;background:var(--danger);color:#fff;font-size:.55rem;font-weight:700;border-radius:2px;padding:.05rem .3rem;margin-left:.25rem;vertical-align:middle">'+totalRisks+'</span>';
+  }
+})();
+</script>
+</body>
+</html>

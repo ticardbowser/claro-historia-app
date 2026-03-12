@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claro Historia</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1f1f1f;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.15);
+  --text:#e8e4de;--muted:#5a5650;
+  --accent:#e8a246;--accent2:#4a9e7a;--danger:#c45050;
+  --c-complete:#4a9e7a;--c-inprog:#e8a246;--c-pending:#5a5650;
+  --ev-hire:#5b8fd4;--ev-depart:#c47a5a;--ev-reorg:#9b6fc4;
+  --ev-tech:#4ab8c4;--ev-risk:#c45050;--ev-note:#8a8680;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inconsolata',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+header{position:sticky;top:0;z-index:50;background:rgba(14,14,14,0.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.05em}
+.logo span{color:var(--accent)}
+.hdr-right{display:flex;align-items:center;gap:.75rem}
+#projName{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:1px dashed var(--border-hi);padding-bottom:1px;transition:color .2s}
+#projName:hover{color:var(--text)}
+.btn{font-family:'Inconsolata',monospace;font-size:.82rem;font-weight:500;padding:.45rem .9rem;border-radius:2px;border:1px solid var(--border-hi);background:transparent;color:var(--text);cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#0e0e0e;font-weight:600}
+.btn-p:hover{background:#d4923c;border-color:#d4923c;color:#0e0e0e}
+main{max-width:860px;margin:0 auto;padding:2.5rem 2rem 6rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:3px;margin-bottom:2rem;overflow:hidden}
+.stat{background:var(--surface);padding:.9rem 1.1rem}
+.stat-v{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;line-height:1}
+.stat-v.g{color:var(--accent2)}.stat-v.a{color:var(--accent)}
+.stat-l{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem}
+.prog-wrap{margin-bottom:2.5rem}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:.5rem}
+.prog-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.prog-pct{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:600;color:var(--accent)}
+.prog-track{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width .6s ease}
+.filter-bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap}
+.filters{display:flex;gap:.35rem;flex-wrap:wrap}
+.fb{font-family:'Inconsolata',monospace;font-size:.68rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;padding:.3rem .7rem;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.fb:hover{border-color:var(--border-hi);color:var(--text)}
+.fb.on{border-color:var(--accent);color:var(--accent);background:rgba(232,162,70,.08)}
+.sort-w{display:flex;align-items:center;gap:.4rem}
+.sort-w label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.sort-w select{font-family:'Inconsolata',monospace;font-size:.75rem;background:var(--surface);border:1px solid var(--border-hi);color:var(--text);padding:.28rem .55rem;border-radius:2px;outline:none}
+.tl{position:relative}
+.tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
+.ms{position:relative;padding-left:2.4rem;margin-bottom:.45rem;opacity:0;animation:sli .4s ease forwards}
+.ms::before{content:'';position:absolute;left:0;top:1.3rem;width:15px;height:15px;border-radius:50%;background:var(--bg);border:2px solid var(--c-pending);z-index:2}
+.ms.complete::before{border-color:var(--c-complete);box-shadow:0 0 8px rgba(74,158,122,.4)}
+.ms.complete::after{content:'';position:absolute;left:4px;top:calc(1.3rem + 4px);width:7px;height:7px;border-radius:50%;background:var(--c-complete);z-index:3}
+.ms.in-progress::before{border-color:var(--c-inprog);box-shadow:0 0 8px rgba(232,162,70,.4)}
+.ms-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.1rem 1.35rem;cursor:pointer;transition:border-color .2s,background .2s}
+.ms-card:hover{border-color:var(--border-hi);background:var(--surface2)}
+.ms.complete .ms-card{border-left:2px solid var(--c-complete)}
+.ms.in-progress .ms-card{border-left:2px solid var(--c-inprog)}
+.ms-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.45rem}
+.ms-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:600;color:var(--text);line-height:1.3}
+.ms.complete .ms-title{text-decoration:line-through;color:var(--muted)}
+.ms-actions{display:flex;gap:.35rem;flex-shrink:0;opacity:0;transition:opacity .15s}
+.ms-card:hover .ms-actions{opacity:1}
+.ms-meta{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.badge{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .45rem;border-radius:2px}
+.badge.complete{background:rgba(74,158,122,.12);color:var(--c-complete);border:1px solid rgba(74,158,122,.2)}
+.badge.in-progress{background:rgba(232,162,70,.12);color:var(--c-inprog);border:1px solid rgba(232,162,70,.2)}
+.badge.pending{background:rgba(90,86,80,.2);color:var(--muted);border:1px solid var(--border)}
+.ms-date{font-size:.7rem;color:var(--muted)}
+.ms-owner{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;color:var(--muted2,#7a7470);background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:.1rem .45rem;cursor:pointer;transition:border-color .15s}
+.ms-owner:hover{border-color:var(--accent);color:var(--accent)}
+.ms-owner-icon{font-size:.7rem}
+.ms-desc{margin-top:.65rem;font-size:.8rem;line-height:1.6;color:#8a8680;border-top:1px solid var(--border);padding-top:.65rem;display:none}
+.ms.open .ms-desc{display:block}
+.ev{position:relative;padding-left:2.4rem;margin-bottom:.45rem;opacity:0;animation:sli .4s ease forwards}
+.ev::before{content:'';position:absolute;left:1px;top:1.25rem;width:13px;height:13px;background:var(--bg);border:2px solid var(--muted);transform:rotate(45deg);z-index:2}
+.ev[data-t="hire"]::before{border-color:var(--ev-hire);box-shadow:0 0 7px rgba(91,143,212,.4)}
+.ev[data-t="depart"]::before{border-color:var(--ev-depart);box-shadow:0 0 7px rgba(196,122,90,.4)}
+.ev[data-t="reorg"]::before{border-color:var(--ev-reorg);box-shadow:0 0 7px rgba(155,111,196,.4)}
+.ev[data-t="tech"]::before{border-color:var(--ev-tech);box-shadow:0 0 7px rgba(74,184,196,.4)}
+.ev[data-t="risk"]::before{border-color:var(--ev-risk);box-shadow:0 0 7px rgba(196,80,80,.4)}
+.ev-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.9rem 1.25rem;cursor:pointer;transition:border-color .2s,background .2s}
+.ev-card:hover{border-color:var(--border-hi);background:var(--surface2)}
+.ev[data-t="hire"] .ev-card{border-left:2px solid var(--ev-hire)}
+.ev[data-t="depart"] .ev-card{border-left:2px solid var(--ev-depart)}
+.ev[data-t="reorg"] .ev-card{border-left:2px solid var(--ev-reorg)}
+.ev[data-t="tech"] .ev-card{border-left:2px solid var(--ev-tech)}
+.ev[data-t="risk"] .ev-card{border-left:2px solid var(--ev-risk)}
+.ev[data-t="note"] .ev-card{border-left:2px solid var(--ev-note)}
+.ev-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.ev-left{display:flex;align-items:flex-start;gap:.6rem;flex:1;min-width:0}
+.ev-icon{font-size:.95rem;flex-shrink:0;margin-top:2px}
+.ev-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);line-height:1.3}
+.ev-meta{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin-top:.3rem}
+.ev-badge{font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px}
+.eb-hire{background:rgba(91,143,212,.12);color:var(--ev-hire);border:1px solid rgba(91,143,212,.25)}
+.eb-depart{background:rgba(196,122,90,.12);color:var(--ev-depart);border:1px solid rgba(196,122,90,.25)}
+.eb-reorg{background:rgba(155,111,196,.12);color:var(--ev-reorg);border:1px solid rgba(155,111,196,.25)}
+.eb-tech{background:rgba(74,184,196,.12);color:var(--ev-tech);border:1px solid rgba(74,184,196,.25)}
+.eb-risk{background:rgba(196,80,80,.12);color:var(--ev-risk);border:1px solid rgba(196,80,80,.25)}
+.eb-note{background:rgba(138,134,128,.12);color:var(--ev-note);border:1px solid rgba(138,134,128,.25)}
+.ev-date{font-size:.68rem;color:var(--muted)}
+.ev-actions{display:flex;gap:.35rem;flex-shrink:0;opacity:0;transition:opacity .15s}
+.ev-card:hover .ev-actions{opacity:1}
+.ev-desc{margin-top:.65rem;font-size:.8rem;line-height:1.6;color:#8a8680;border-top:1px solid var(--border);padding-top:.65rem;display:none}
+.ev.open .ev-desc{display:block}
+.ib{width:24px;height:24px;border-radius:2px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.72rem;transition:all .15s}
+.ib:hover{border-color:var(--accent);color:var(--accent)}
+.ib.del:hover{border-color:var(--danger);color:var(--danger)}
+.empty{text-align:center;padding:4rem 2rem;border:1px dashed var(--border);border-radius:3px;display:none}
+.empty.show{display:block}
+.empty h3{font-family:'Syne',sans-serif;font-size:.95rem;color:var(--muted);margin-bottom:.4rem}
+.empty p{font-size:.8rem;color:var(--muted);margin-bottom:1.25rem}
+.ov{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border-hi);border-radius:4px;padding:1.75rem;width:100%;max-width:460px;transform:translateY(10px);transition:transform .2s}
+.ov.open .modal{transform:translateY(0)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.35rem}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--text)}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;transition:color .15s}
+.modal-x:hover{color:var(--text)}
+.fg{margin-bottom:1.1rem}
+label{display:block;font-size:.67rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem}
+input[type=text],input[type=date],input[type=url],textarea,select{width:100%;background:var(--bg);border:1px solid var(--border-hi);border-radius:2px;padding:.6rem .8rem;font-family:'Inconsolata',monospace;font-size:.86rem;color:var(--text);outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:75px}
+select option{background:var(--surface)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.modal-ft{display:flex;justify-content:flex-end;gap:.65rem;margin-top:1.5rem;padding-top:1.1rem;border-top:1px solid var(--border)}
+@keyframes sli{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.src-link{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:var(--accent);background:rgba(232,162,70,.08);border:1px solid rgba(232,162,70,.3);border-radius:2px;padding:.2rem .6rem;text-decoration:none;transition:all .15s;white-space:nowrap;}
+.src-link:hover{background:rgba(232,162,70,.18);border-color:var(--accent);}
+.src-block{display:flex;align-items:flex-start;gap:.75rem;margin-top:.85rem;padding:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;}
+.src-block-icon{font-size:1.1rem;line-height:1;flex-shrink:0;margin-top:2px;}
+.src-block-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.2rem;}
+.src-block-link{display:block;font-size:.82rem;font-weight:600;color:var(--accent);text-decoration:none;margin-bottom:.2rem;}
+.src-block-link:hover{text-decoration:underline;}
+.src-block-url{font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+.ms-desc p,.ev-desc p{margin-bottom:.5rem;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface2);border:1px solid var(--border-hi);border-radius:3px;padding:.6rem 1rem;font-size:.8rem;color:var(--text);opacity:0;pointer-events:none;transition:opacity .3s;z-index:200}
+.toast.show{opacity:1}
+@media(max-width:600px){header{padding:1rem}main{padding:1.5rem 1rem 5rem}.stats{grid-template-columns:repeat(2,1fr)}.frow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:1.25rem">
+    <div class="logo">Claro <span>Historia</span></div>
+    <a href="{% url 'dashboards_home' %}" style="font-size:.72rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.25rem .6rem;border-radius:2px;transition:all .15s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='rgba(232,162,70,.4)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">← Dashboard</a>
+  </div>
+  <div class="hdr-right">
+    <span id="projName" onclick="editProjName()" title="Click to rename">{{ project.name }}</span>
+    <a href="{% url 'project_settings' project.id %}" style="font-size:.72rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.25rem .6rem;border-radius:2px;transition:all .15s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='rgba(232,162,70,.4)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">⚙ Settings</a>
+    <button class="btn" onclick="openEvModal(null)">+ Event</button>
+    <button class="btn btn-p" onclick="openMsModal(null)">+ Milestone</button>
+    <span style="font-size:.72rem;color:var(--muted);border-left:1px solid var(--border);padding-left:.75rem;margin-left:.1rem">{{ request.user.get_full_name|default:request.user.username }}</span>
+    <a href="{% url 'logout' %}" style="font-size:.72rem;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.25rem .6rem;border-radius:2px;transition:all .15s" onmouseover="this.style.color='var(--danger)';this.style.borderColor='rgba(196,80,80,.4)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Sign out</a>
+  </div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="stat-v" id="sTotal">0</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-v g" id="sComplete">0</div><div class="stat-l">Complete</div></div>
+    <div class="stat"><div class="stat-v a" id="sInProg">0</div><div class="stat-l">In Progress</div></div>
+    <div class="stat"><div class="stat-v" id="sPending">0</div><div class="stat-l">Pending</div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-hdr"><span class="prog-lbl">Project Progress</span><span class="prog-pct" id="pPct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
+  </div>
+  <div class="filter-bar">
+    <div class="filters">
+      <button class="fb on" onclick="setF('all',this)">All</button>
+      <button class="fb" onclick="setF('complete',this)">Complete</button>
+      <button class="fb" onclick="setF('in-progress',this)">In Progress</button>
+      <button class="fb" onclick="setF('pending',this)">Pending</button>
+      <button class="fb" onclick="setF('__ev',this)">Events</button>
+    </div>
+    <div class="sort-w">
+      <label>Owner</label>
+      <select id="ownerFilter" onchange="setOwnerFilter(this.value)" style="min-width:120px"><option value="">All owners</option></select>
+    </div>
+    <div class="sort-w">
+      <label>Sort</label>
+      <select onchange="setSort(this.value)">
+        <option value="date-asc">Date ↑</option>
+        <option value="date-desc">Date ↓</option>
+        <option value="title">Title</option>
+      </select>
+    </div>
+  </div>
+  <div class="tl" id="tl"></div>
+  <div class="empty" id="empty">
+    <h3>Nothing here yet</h3>
+    <p>Add a milestone or project event to get started.</p>
+    <button class="btn btn-p" onclick="openMsModal(null)">+ Add Milestone</button>
+  </div>
+</main>
+
+<!-- Milestone Modal -->
+<div class="ov" id="msOv" onclick="if(event.target===this)closeMsModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-ttl" id="msTtl">New Milestone</span>
+      <button class="modal-x" onclick="closeMsModal()">&#10005;</button>
+    </div>
+    <div class="fg"><label>Title</label><input type="text" id="mTitle" placeholder="e.g. Design Handoff"></div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input type="date" id="mDate"></div>
+      <div class="fg"><label>Status</label>
+        <select id="mStatus">
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="complete">Complete</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Category</label><input type="text" id="mCat" placeholder="e.g. Design, Engineering"></div>
+      <div class="fg"><label>Owner</label><input type="text" id="mOwner" placeholder="e.g. Sarah Chen"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Source Link</label><input type="url" id="mSource" placeholder="https://docs.google.com/…"></div>
+      <div class="fg"><label>Link Label <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="mSourceName" placeholder="e.g. Kickoff Brief"></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="mDesc" placeholder="Optional notes..."></textarea></div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeMsModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveMs()">Save Milestone</button>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div class="ov" id="evOv" onclick="if(event.target===this)closeEvModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-ttl" id="evTtl">New Project Event</span>
+      <button class="modal-x" onclick="closeEvModal()">&#10005;</button>
+    </div>
+    <div class="fg"><label>Title</label><input type="text" id="eTitle" placeholder="e.g. Sarah Chen joins as Lead Designer"></div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input type="date" id="eDate"></div>
+      <div class="fg"><label>Event Type</label>
+        <select id="eType">
+          <option value="hire">New Hire</option>
+          <option value="depart">Departure</option>
+          <option value="reorg">Reorganization</option>
+          <option value="tech">Technology</option>
+          <option value="risk">Risk / Blocker</option>
+          <option value="note">General Note</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>People Involved</label><input type="text" id="ePeople" placeholder="e.g. Sarah Chen, James Park"></div>
+      <div class="fg"><label>Owner / Lead</label><input type="text" id="eOwner" placeholder="e.g. Sarah Chen"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Source Link</label><input type="url" id="eSource" placeholder="https://docs.google.com/…"></div>
+      <div class="fg"><label>Link Label <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="eSourceName" placeholder="e.g. Reorg Memo"></div>
+    </div>
+    <div class="fg"><label>Details</label><textarea id="eDesc" placeholder="Context, impact, or notes..."></textarea></div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeEvModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveEv()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Data loaded from Django ───────────────────────────────────────────────────
+var PROJECT_ID = {{ project.id }};
+var milestones = {{ milestones_json|safe }};
+var events = {{ events_json|safe }};
+
+// ── State ────────────────────────────────────────────────────────────────────
+var editMsId = null, editEvId = null, curFilter = 'all', curSort = 'date-asc', curOwner = '';
+var ICONS = {hire:'👤',depart:'👋',reorg:'🔀',tech:'⚙️',risk:'⚠️',note:'📌'};
+var LABELS = {hire:'New Hire',depart:'Departure',reorg:'Reorganization',tech:'Technology',risk:'Risk / Blocker',note:'Note'};
+var SL = {complete:'Complete','in-progress':'In Progress',pending:'Pending'};
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+function csrfToken(){
+  var m=document.cookie.match(/csrftoken=([^;]+)/);
+  return m?m[1]:'';
+}
+async function api(method, url, body){
+  var opts={method:method,headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken()}};
+  if(body) opts.body=JSON.stringify(body);
+  var r=await fetch(url,opts);
+  if(!r.ok) throw new Error('API error '+r.status);
+  return r.json();
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2000);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  var tl=document.getElementById('tl'),empty=document.getElementById('empty'),items=[];
+  if(curFilter!=='__ev'){
+    milestones.filter(function(m){
+      return (curFilter==='all'||m.status===curFilter) &&
+             (!curOwner||norm(m.owner)===norm(curOwner));
+    }).forEach(function(m){items.push(Object.assign({_k:'ms'},m));});
+  }
+  if(curFilter==='all'||curFilter==='__ev'){
+    events.filter(function(e){
+      return !curOwner||(norm(e.owner)===norm(curOwner));
+    }).forEach(function(e){items.push(Object.assign({_k:'ev'},e));});
+  }
+  items.sort(function(a,b){
+    var da=new Date(a.date||'1900-01-01'),db=new Date(b.date||'1900-01-01');
+    if(curSort==='date-asc') return da-db;
+    if(curSort==='date-desc') return db-da;
+    return a.title.localeCompare(b.title);
+  });
+  if(items.length===0){tl.innerHTML='';empty.classList.add('show');}
+  else{
+    empty.classList.remove('show');
+    tl.innerHTML=items.map(function(item,i){
+      return item._k==='ms'?rMs(item,i):rEv(item,i);
+    }).join('');
+  }
+  updateStats();
+  populateOwnerFilter();
+}
+
+function srcLabel(url){
+  if(!url) return null;
+  if(/docs\.google\.com\/document/i.test(url))    return {icon:'📄',label:'Google Doc'};
+  if(/docs\.google\.com\/spreadsheet/i.test(url)) return {icon:'📊',label:'Google Sheet'};
+  if(/docs\.google\.com\/presentation/i.test(url))return {icon:'📑',label:'Google Slides'};
+  if(/drive\.google\.com/i.test(url))             return {icon:'🗂️',label:'Google Drive'};
+  if(/mail\.google\.com|gmail/i.test(url))        return {icon:'✉️',label:'Email Thread'};
+  if(/notion\.so/i.test(url))                     return {icon:'🗒️',label:'Notion'};
+  if(/slack\.com/i.test(url))                     return {icon:'💬',label:'Slack'};
+  if(/github\.com/i.test(url))                    return {icon:'🐙',label:'GitHub'};
+  if(/figma\.com/i.test(url))                     return {icon:'🎨',label:'Figma'};
+  if(/jira|atlassian/i.test(url))                 return {icon:'🎫',label:'Jira'};
+  if(/airtable\.com/i.test(url))                  return {icon:'📋',label:'Airtable'};
+  return {icon:'🔗',label:'Source'};
+}
+
+function rSrcBlock(url, name){
+  if(!url) return '';
+  var s=srcLabel(url);
+  var display = name && name.trim() ? esc(name.trim()) : s.label;
+  return '<div class="src-block" onclick="event.stopPropagation()">'
+    +'<span class="src-block-icon">'+s.icon+'</span>'
+    +'<div class="src-block-body">'
+    +'<div class="src-block-label">Source</div>'
+    +'<a class="src-block-link" href="'+esc(url)+'" target="_blank" rel="noopener">'+display+'</a>'
+    +'<div class="src-block-url">'+esc(url)+'</div>'
+    +'</div></div>';
+}
+
+function rMs(m,i){
+  var block=rSrcBlock(m.source||'', m.sourceName||'');
+  return '<div class="ms '+m.status+'" id="ms'+m.id+'" style="animation-delay:'+(i*.04)+'s" onclick="tog(\'ms'+m.id+'\')">'
+    +'<div class="ms-card">'
+    +'<div class="ms-top"><div class="ms-title">'+esc(m.title)+'</div>'
+    +'<div class="ms-actions" onclick="event.stopPropagation()">'
+    +'<button class="ib" onclick="cycleMs('+m.id+')">&#8635;</button>'
+    +'<button class="ib" onclick="openMsModal('+m.id+')">&#9999;</button>'
+    +'<button class="ib del" onclick="delMs('+m.id+')">&#10005;</button>'
+    +'</div></div>'
+    +'<div class="ms-meta"><span class="badge '+m.status+'">'+SL[m.status]+'</span>'
+    +(m.date?'<span class="ms-date">'+fd(m.date)+'</span>':'')
+    +(m.cat?'<span class="ms-date">&middot; '+esc(m.cat)+'</span>':'')
+    +(m.owner?'<span class="ms-owner" onclick="event.stopPropagation();setOwnerFilter(\'' + esc(m.owner) + '\')"><span class="ms-owner-icon">👤</span>'+esc(m.owner)+'</span>':'')
+    +'</div>'
+    +block
+    +(m.desc?'<div class="ms-desc"><p>'+esc(m.desc)+'</p></div>':'')
+    +'</div></div>';
+}
+
+function rEv(e,i){
+  var icon=ICONS[e.etype]||'📌',label=LABELS[e.etype]||e.etype;
+  var block=rSrcBlock(e.source||'', e.sourceName||'');
+  var dbId=e.db_id||e.id.toString().replace('e','');
+  return '<div class="ev" data-t="'+e.etype+'" id="'+e.id+'" style="animation-delay:'+(i*.04)+'s" onclick="tog(\''+e.id+'\')">'
+    +'<div class="ev-card">'
+    +'<div class="ev-top"><div class="ev-left"><span class="ev-icon">'+icon+'</span>'
+    +'<div><div class="ev-title">'+esc(e.title)+'</div>'
+    +'<div class="ev-meta"><span class="ev-badge eb-'+e.etype+'">'+label+'</span>'
+    +(e.date?'<span class="ev-date">'+fd(e.date)+'</span>':'')
+    +(e.people?'<span class="ev-date">&middot; '+esc(e.people)+'</span>':'')
+    +(e.owner?'<span class="ms-owner" onclick="event.stopPropagation();setOwnerFilter(\'' + esc(e.owner) + '\')"><span class="ms-owner-icon">👤</span>'+esc(e.owner)+'</span>':'')
+    +'</div></div></div>'
+    +'<div class="ev-actions" onclick="event.stopPropagation()">'
+    +'<button class="ib" onclick="openEvModal(\''+e.id+'\')">&#9999;</button>'
+    +'<button class="ib del" onclick="delEv(\''+e.id+'\')">&#10005;</button>'
+    +'</div></div>'
+    +block
+    +(e.desc?'<div class="ev-desc"><p>'+esc(e.desc)+'</p></div>':'')
+    +'</div></div>';
+}
+
+function updateStats(){
+  var t=milestones.length,c=0,ip=0,p=0;
+  milestones.forEach(function(m){if(m.status==='complete')c++;else if(m.status==='in-progress')ip++;else p++;});
+  var pct=t===0?0:Math.round((c/t)*100);
+  document.getElementById('sTotal').textContent=t;
+  document.getElementById('sComplete').textContent=c;
+  document.getElementById('sInProg').textContent=ip;
+  document.getElementById('sPending').textContent=p;
+  document.getElementById('pPct').textContent=pct+'%';
+  document.getElementById('pFill').style.width=pct+'%';
+}
+
+function tog(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
+
+// ── Milestone actions ─────────────────────────────────────────────────────────
+async function cycleMs(id){
+  try{
+    var updated=await api('PATCH','/api/projects/'+PROJECT_ID+'/milestones/'+id+'/cycle/');
+    var idx=milestones.findIndex(function(m){return m.id===id;});
+    if(idx!==-1) milestones[idx]=updated;
+    render();
+  } catch(e){toast('Error updating milestone');}
+}
+
+async function delMs(id){
+  if(!confirm('Delete this milestone?')) return;
+  try{
+    await api('DELETE','/api/projects/'+PROJECT_ID+'/milestones/'+id+'/');
+    milestones=milestones.filter(function(m){return m.id!==id;});
+    render();toast('Milestone deleted');
+  } catch(e){toast('Error deleting milestone');}
+}
+
+function openMsModal(id){
+  editMsId=id||null;
+  document.getElementById('msTtl').textContent=id?'Edit Milestone':'New Milestone';
+  if(id){
+    var m=milestones.find(function(x){return x.id===id;});
+    document.getElementById('mTitle').value=m.title;
+    document.getElementById('mDate').value=m.date||'';
+    document.getElementById('mStatus').value=m.status;
+    document.getElementById('mCat').value=m.cat||'';
+    document.getElementById('mSource').value=m.source||'';
+    document.getElementById('mOwner').value=m.owner||'';
+    document.getElementById('mSourceName').value=m.sourceName||'';
+    document.getElementById('mDesc').value=m.desc||'';
+  } else {
+    document.getElementById('mTitle').value='';
+    document.getElementById('mDate').value='';
+    document.getElementById('mStatus').value='pending';
+    document.getElementById('mCat').value='';
+    document.getElementById('mOwner').value='';
+    document.getElementById('mSource').value='';
+    document.getElementById('mSourceName').value='';
+    document.getElementById('mDesc').value='';
+  }
+  document.getElementById('msOv').classList.add('open');
+  setTimeout(function(){document.getElementById('mTitle').focus();},120);
+}
+function closeMsModal(){document.getElementById('msOv').classList.remove('open');editMsId=null;}
+
+async function saveMs(){
+  var t=document.getElementById('mTitle').value.trim();
+  if(!t){document.getElementById('mTitle').focus();return;}
+  var d={
+    title:t,
+    date:document.getElementById('mDate').value,
+    status:document.getElementById('mStatus').value,
+    cat:document.getElementById('mCat').value.trim(),
+    owner:document.getElementById('mOwner').value.trim(),
+    source:document.getElementById('mSource').value.trim(),
+    sourceName:document.getElementById('mSourceName').value.trim(),
+    desc:document.getElementById('mDesc').value.trim()
+  };
+  try{
+    if(editMsId){
+      var updated=await api('PUT','/api/projects/'+PROJECT_ID+'/milestones/'+editMsId+'/',d);
+      var idx=milestones.findIndex(function(m){return m.id===editMsId;});
+      if(idx!==-1) milestones[idx]=updated;
+      toast('Milestone updated');
+    } else {
+      var created=await api('POST','/api/projects/'+PROJECT_ID+'/milestones/',d);
+      milestones.push(created);
+      toast('Milestone added');
+    }
+    closeMsModal();render();
+  } catch(e){toast('Error saving milestone');}
+}
+
+// ── Event actions ─────────────────────────────────────────────────────────────
+async function delEv(id){
+  if(!confirm('Delete this event?')) return;
+  var dbId=typeof id==='string'?id.replace('e',''):id;
+  try{
+    await api('DELETE','/api/projects/'+PROJECT_ID+'/events/'+dbId+'/');
+    events=events.filter(function(e){return e.id!==id;});
+    render();toast('Event deleted');
+  } catch(e){toast('Error deleting event');}
+}
+
+function openEvModal(id){
+  editEvId=id||null;
+  document.getElementById('evTtl').textContent=id?'Edit Event':'New Project Event';
+  if(id){
+    var e=events.find(function(x){return x.id===id;});
+    document.getElementById('eTitle').value=e.title;
+    document.getElementById('eDate').value=e.date||'';
+    document.getElementById('eType').value=e.etype;
+    document.getElementById('ePeople').value=e.people||'';
+    document.getElementById('eOwner').value=e.owner||'';
+    document.getElementById('eSource').value=e.source||'';
+    document.getElementById('eSourceName').value=e.sourceName||'';
+    document.getElementById('eDesc').value=e.desc||'';
+  } else {
+    document.getElementById('eTitle').value='';
+    document.getElementById('eDate').value='';
+    document.getElementById('eType').value='hire';
+    document.getElementById('ePeople').value='';
+    document.getElementById('eOwner').value='';
+    document.getElementById('eSource').value='';
+    document.getElementById('eSourceName').value='';
+    document.getElementById('eDesc').value='';
+  }
+  document.getElementById('evOv').classList.add('open');
+  setTimeout(function(){document.getElementById('eTitle').focus();},120);
+}
+function closeEvModal(){document.getElementById('evOv').classList.remove('open');editEvId=null;}
+
+async function saveEv(){
+  var t=document.getElementById('eTitle').value.trim();
+  if(!t){document.getElementById('eTitle').focus();return;}
+  var d={
+    title:t,
+    date:document.getElementById('eDate').value,
+    etype:document.getElementById('eType').value,
+    people:document.getElementById('ePeople').value.trim(),
+    owner:document.getElementById('eOwner').value.trim(),
+    source:document.getElementById('eSource').value.trim(),
+    sourceName:document.getElementById('eSourceName').value.trim(),
+    desc:document.getElementById('eDesc').value.trim()
+  };
+  try{
+    if(editEvId){
+      var dbId=editEvId.toString().replace('e','');
+      var updated=await api('PUT','/api/projects/'+PROJECT_ID+'/events/'+dbId+'/',d);
+      var idx=events.findIndex(function(e){return e.id===editEvId;});
+      if(idx!==-1) events[idx]=updated;
+      toast('Event updated');
+    } else {
+      var created=await api('POST','/api/projects/'+PROJECT_ID+'/events/',d);
+      events.push(created);
+      toast('Event added');
+    }
+    closeEvModal();render();
+  } catch(e){toast('Error saving event');}
+}
+
+// ── Project rename ────────────────────────────────────────────────────────────
+function editProjName(){
+  var el=document.getElementById('projName'),cur=el.textContent;
+  var inp=document.createElement('input');inp.type='text';inp.value=cur;
+  inp.style.cssText='font-family:Syne,sans-serif;font-size:.82rem;font-weight:500;background:#1f1f1f;border:1px solid rgba(255,255,255,.2);color:#e8e4de;padding:.2rem .4rem;border-radius:2px;width:150px;outline:none;';
+  el.replaceWith(inp);inp.focus();inp.select();
+  async function done(){
+    var v=inp.value.trim()||cur;
+    try{ await api('PATCH','/api/projects/'+PROJECT_ID+'/rename/',{name:v}); }
+    catch(e){}
+    var s=document.createElement('span');
+    s.id='projName';s.textContent=v;s.title='Click to rename';s.onclick=editProjName;
+    s.style.cssText='font-family:Syne,sans-serif;font-size:.82rem;font-weight:500;color:#5a5650;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,.15);padding-bottom:1px;';
+    s.onmouseenter=function(){s.style.color='#e8e4de';};
+    s.onmouseleave=function(){s.style.color='#5a5650';};
+    inp.replaceWith(s);
+  }
+  inp.onblur=done;
+  inp.onkeydown=function(e){if(e.key==='Enter')done();if(e.key==='Escape'){inp.value=cur;done();}};
+}
+
+// ── Owner filter ──────────────────────────────────────────────────────────────
+function norm(s){return (s||'').trim().toLowerCase();}
+function setOwnerFilter(owner){
+  curOwner=norm(owner);
+  var sel=document.getElementById('ownerFilter');
+  // Find matching option or set to empty
+  var found=false;
+  for(var i=0;i<sel.options.length;i++){
+    if(norm(sel.options[i].value)===curOwner){sel.selectedIndex=i;found=true;break;}
+  }
+  if(!found){sel.selectedIndex=0;curOwner='';}
+  render();
+}
+function populateOwnerFilter(){
+  var owners=new Set();
+  milestones.forEach(function(m){if(m.owner&&m.owner.trim())owners.add(m.owner.trim());});
+  events.forEach(function(e){if(e.owner&&e.owner.trim())owners.add(e.owner.trim());});
+  var sel=document.getElementById('ownerFilter');
+  var cur=sel.value;
+  // Keep the "All owners" option, rebuild the rest
+  while(sel.options.length>1)sel.remove(1);
+  Array.from(owners).sort().forEach(function(o){
+    var opt=document.createElement('option');opt.value=o;opt.textContent=o;sel.appendChild(opt);
+  });
+  // Restore previous selection if still valid
+  if(cur){for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===cur){sel.selectedIndex=i;break;}}}
+}
+
+// ── Filter / sort ─────────────────────────────────────────────────────────────
+function setF(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');render();
+}
+function setSort(v){curSort=v;render();}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){closeMsModal();closeEvModal();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openMsModal(null);}
+});
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function fd(d){
+  if(!d)return'';var p=d.split('-');
+  return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function esc(s){
+  if(!s)return'';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+render();
+</script>
+</body>
+</html>
