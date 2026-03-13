@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+.env
+db.sqlite3
+.git
+.gitignore
+.dockerignore
